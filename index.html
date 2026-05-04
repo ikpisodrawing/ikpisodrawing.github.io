@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- ============================================================
+     HEAD SECTION
+     Contains:
+     - Page charset and mobile viewport settings
+     - Browser tab title
+     - Open Graph tags (social share previews on FB, Messenger)
+     - Font Awesome icons (fixes blank nav icons — Bug fix)
+     - CSS stylesheet
+     - html2canvas library (used to download the receipt as PNG)
+     ============================================================ -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IK Piso Drawing | Art Portfolio</title>
+
+    <!-- ── Open Graph / Social Share Tags ──────────────────────
+         Makes your link look good when shared on Facebook,
+         Messenger, iMessage, etc. — shows a preview image,
+         title, and description instead of a blank link.
+         TO UPDATE: Replace og:image with a direct URL to your
+         best portrait photo. Replace og:url with your actual
+         website address once you have one.
+         ──────────────────────────────────────────────────────── -->
+    <meta property="og:title"       content="IK Piso Drawing | Custom Charcoal Portraits">
+    <meta property="og:description" content="Realistic handcrafted charcoal portraits. Order yours today!">
+    <meta property="og:image"       content="images-featured.jpg">
+    <meta property="og:url"         content="https://yourwebsite.com">
+    <meta property="og:type"        content="website">
+
+    <!-- ── Font Awesome Icons ───────────────────────────────────
+         REQUIRED for the bottom nav icons (palette, user, link).
+         Without this link tag, all 3 icons show as blank squares.
+         Bug fix: this was missing from the original file.
+         ──────────────────────────────────────────────────────── -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- ── CSS Stylesheet ───────────────────────────────────── -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- ── html2canvas Library ──────────────────────────────────
+         Used only for the "Download Receipt" button.
+         Captures the receipt card as a PNG image the client
+         can save to their phone. Loaded in <head> so it's
+         ready before the user reaches the receipt view.
+         ──────────────────────────────────────────────────────── -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+
+
+<!-- ============================================================
+     BODY SECTION
+     Full page structure:
+     1.  Background overlay        — dark blur layer behind content
+     2.  Main container            — header + all screens + popup
+         a. Header                 — avatar, name, CTA, stats strip
+         b. Main content area      — 3 swappable screens
+             • Screen 1: Gallery   — artworks, filters, testimonials
+             • Screen 2: About     — bio and experience
+             • Screen 3: Contacts  — FB Messenger and email links
+         c. Commission popup       — 2-step wizard + receipt
+     3.  Bottom navigation bar     — Gallery / About / Contacts tabs
+     4.  script.js link            — loaded last so HTML exists first
+     ============================================================ -->
+<body>
+
+    <!-- Dark blurred overlay above the background image but
+         below all page content. Styled in CSS section 5.        -->
+    <div class="overlay"></div>
+
+
+    <!-- ============================================================
+         MAIN CONTAINER
+         Full-height flex column that stacks:
+         header (fixed top) → main (scrollable) → nav (fixed bottom)
+         z-index: 2 places it above the overlay layer.
+         ============================================================ -->
+    <div class="container">
+
+
+        <!-- ========================================================
+             HEADER
+             Always visible at the top of every screen. Contains:
+             Row 1: Profile photo | Artist name + title | Order button
+             Row 2: Stats strip — Clients / Artworks / Years
+                    Numbers animate from 0 on page load (JS).
+                    To change the target numbers, edit animateCounter()
+                    calls in script.js under GALLERY UPGRADE — SCRIPTS.
+             ======================================================== -->
+        <header>
+
+            <!-- Row 1: avatar | name | CTA button -->
+            <div class="header-top">
+
+                <!-- Profile photo — replace with your actual photo filename -->
+                <img src="myprofile.jpeg" alt="IK Piso Drawing profile photo" class="avatar">
+
+                <!-- Artist name and subtitle -->
+                <div class="header-info">
+                    <h1 class="name">IK Piso Drawing</h1>
+                    <p class="title">Traditional Artist & Entrepreneur</p>
+                </div>
+
+                <!-- Compact commission button — always visible in header.
+                     Opening this triggers openCommission() in script.js.
+                     This is Commission Button 1 of 3.                    -->
+                <button id="start-commission-btn" class="header-cta-btn">
+                    + Order
+                </button>
+
+            </div>
+
+            <!-- Row 2: animated stats strip -->
+            <div class="header-stats">
+                <div class="hstat">
+                    <span class="hstat-num" id="h-counter-clients">50+</span>
+                    <span class="hstat-label">Clients</span>
+                </div>
+                <div class="hstat-divider"></div>
+                <div class="hstat">
+                    <span class="hstat-num" id="h-counter-artworks">80+</span>
+                    <span class="hstat-label">Artworks</span>
+                </div>
+                <div class="hstat-divider"></div>
+                <div class="hstat">
+                    <span class="hstat-num" id="h-counter-years">2+</span>
+                    <span class="hstat-label">Years of drawing</span>
+                </div>
+            </div>
+
+        </header>
+        <!-- END: HEADER -->
+
+
+        <!-- ========================================================
+             MAIN CONTENT AREA
+             Contains 3 screens. Only one is visible at a time.
+             JS switchScreen() in script.js section 2 handles swapping.
+             Bottom padding (7rem) leaves room for the fixed nav bar.
+             ======================================================== -->
+        <main>
+
+
+            <!-- ====================================================
+                 SCREEN 1: GALLERY  (#screen-gallery)
+                 Default screen — shown when the page first loads.
+                 Contains:
+                 - Featured art hero image
+                 - Filter tabs (All / Solo / Couple / Group / Pet)
+                 - Masonry gallery grid of artwork cards
+                 - Rotating testimonial strip
+                 - How It Works process steps
+                 - Bottom CTA button (Commission Button 3 of 3)
+                 ==================================================== -->
+            <div id="screen-gallery" class="screen active">
+
+                <!-- ── FEATURED ART ─────────────────────────────────
+                     Large hero image at the top of the gallery.
+                     TO UPDATE: Replace src="images-featured.jpg"
+                     with your best portrait photo filename.
+                     ─────────────────────────────────────────────── -->
+                <div class="featured-art">
+                    <img src="images-featured.jpg" alt="Featured Artwork" id="featured-img">
+                    <div class="featured-overlay">
+                        <div class="featured-badge">⭐⭐⭐⭐ Featured Work</div>
+                        <h3>Realistic Charcoal Portraits</h3>
+                        <p>Memorable art for your loved ones</p>
+                        <!-- Commission Button 2 of 3 — opens the same popup -->
+                        <button class="featured-cta" id="start-commission-btn-2">
+                            Get Yours Now! →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ── FILTER TABS ───────────────────────────────────
+                     Tap a tab to show only that artwork type.
+                     JS filterBtns listener matches each button's
+                     data-filter value to gallery items' data-filter.
+                     "all" shows everything.
+                     ─────────────────────────────────────────────── -->
+                <div class="gallery-filters" id="gallery-filters">
+                    <button class="filter-btn active" data-filter="all">All Works</button>
+                    <button class="filter-btn" data-filter="solo">Solo</button>
+                    <button class="filter-btn" data-filter="couple">Couple</button>
+                    <button class="filter-btn" data-filter="group">Group</button>
+                    <button class="filter-btn" data-filter="pet">Pet</button>
+                </div>
+
+                <!-- ── GALLERY GRID ──────────────────────────────────
+                     Masonry 2-column layout of artwork cards.
+                     Cards fade in with a stagger on page load (JS).
+
+                     HOW TO ADD A NEW ARTWORK:
+                     1. Copy one .gallery-item block
+                     2. Replace src="..." with your image filename
+                     3. Set data-filter to one of:
+                        solo | couple | group | pet
+                     4. Update the <h4> title text
+                     5. Update the price/status text and use either:
+                        class="gallery-status sold"
+                        class="gallery-status available"
+                     ─────────────────────────────────────────────── -->
+                <div class="gallery-grid" id="gallery-grid">
+
+                    <!-- Artwork card — COPY THIS BLOCK to add more artworks -->
+                    <div class="gallery-item" data-filter="solo">
+                        <img src="images-art1.jpg" alt="Solo Portrait">
+                        <div class="gallery-badge">Solo</div>
+                        <div class="gallery-info">
+                            <h4>Solo Portrait</h4>
+                            <p class="gallery-status sold">Sold • ₱800</p>
+                        </div>
+                    </div>
+
+                    <div class="gallery-item" data-filter="solo">
+                        <img src="images-art2.jpg" alt="Solo Portrait">
+                        <div class="gallery-badge">Solo</div>
+                        <div class="gallery-info">
+                            <h4>Solo Portrait</h4>
+                            <p class="gallery-status sold">Sold • ₱800</p>
+                        </div>
+                    </div>
+
+                    <!-- More artwork examples (uncomment to use):
+                    <div class="gallery-item" data-filter="couple">
+                        <img src="images-art3.jpg" alt="Couple Portrait">
+                        <div class="gallery-badge">Couple</div>
+                        <div class="gallery-info">
+                            <h4>Couple Portrait</h4>
+                            <p class="gallery-status available">Available • ₱1,100</p>
+                        </div>
+                    </div>
+
+                    <div class="gallery-item" data-filter="pet">
+                        <img src="images-art4.jpg" alt="Pet Portrait">
+                        <div class="gallery-badge">Pet</div>
+                        <div class="gallery-info">
+                            <h4>Pet Portrait</h4>
+                            <p class="gallery-status available">Available • ₱500</p>
+                        </div>
+                    </div>
+                    -->
+
+                </div>
+                <!-- END: GALLERY GRID -->
+
+                <!-- ── TESTIMONIAL STRIP ────────────────────────────
+                     Rotates through client quotes every 4 seconds.
+                     Dots at the bottom let clients tap to jump to
+                     a specific quote (dots built by JS).
+                     TO UPDATE: Edit the testimonials array in
+                     script.js under ROTATING TESTIMONIALS.
+                     ─────────────────────────────────────────────── -->
+                <div class="testimonial-strip">
+                    <div class="testimonial-quote" id="testimonial-text">
+                        "The portrait was so realistic, my mom cried when she saw it."
+                    </div>
+                    <div class="testimonial-author" id="testimonial-author">
+                        — Happy Client, Cagayan de Oro
+                    </div>
+                    <div class="testimonial-dots" id="testimonial-dots"></div>
+                </div>
+
+                <!-- ── HOW IT WORKS ──────────────────────────────────
+                     3-step process guide for new visitors.
+                     Edit text here directly to update the steps.
+                     ─────────────────────────────────────────────── -->
+                <div class="process-section">
+                    <h3 class="section-title">How It Works</h3>
+                    <div class="process-steps">
+                        <div class="process-step">
+                            <div class="step-icon">📸</div>
+                            <div class="step-text">
+                                <strong>1. Send Photo</strong>
+                                <p>Send your clear reference photo via Messenger.</p>
+                            </div>
+                        </div>
+                        <div class="process-step">
+                            <div class="step-icon">✏️</div>
+                            <div class="step-text">
+                                <strong>2. I Draw</strong>
+                                <p>I hand-draw your portrait with full detail.</p>
+                            </div>
+                        </div>
+                        <div class="process-step">
+                            <div class="step-icon">📦</div>
+                            <div class="step-text">
+                                <strong>3. You Receive</strong>
+                                <p>Delivered straight to your door.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── BOTTOM CTA ────────────────────────────────────
+                     Final commission push at the end of the gallery.
+                     Commission Button 3 of 3 — same popup as the others.
+                     ─────────────────────────────────────────────── -->
+                <div class="gallery-cta">
+                    <div class="cta-sparkle">✦</div>
+                    <h2>Ready to Own a Custom Piece?</h2>
+                    <p class="cta-sub">Handcrafted. One of a kind. Yours forever.</p>
+                    <button id="start-commission-btn-3" class="start-btn">
+                        Start Your Commission Now!
+                    </button>
+                </div>
+
+            </div>
+            <!-- END: SCREEN 1 GALLERY -->
+
+
+            <!-- ====================================================
+                 SCREEN 2: ABOUT  (#screen-resume)
+                 Shows artist bio and work experience.
+                 Edit the paragraph and experience text directly here.
+                 No JS interaction — purely informational content.
+                 ==================================================== -->
+            <div id="screen-resume" class="screen">
+                <div class="resume-content">
+
+                    <h2 class="section-title">About IK Piso Drawing</h2>
+                    <p style="color: var(--text-muted); line-height: 1.8; font-size: 1.05rem;">
+                        My name is Ismael Khimhar Sumampil. I'm a Traditional Artist and a 3rd year
+                        BS Computer Science student at Basilan State College. I started taking
+                        commissions in my second year of college, and it has since become my side
+                        source of income. I take commissions from clients across the country through
+                        social media. Each artwork I create is a chance to turn someone's idea into
+                        something tangible, and that's what keeps me drawing.
+                    </p>
+
+                    <h2 class="section-title">Experience</h2>
+                    <div class="experience-item">
+                        <div class="exp-header">
+                            <div><strong>Freelance Traditional Artist</strong></div>
+                            <div style="color: var(--text-muted);">2023 — Present</div>
+                        </div>
+                        <p style="color: var(--text-muted);">
+                            Creating custom charcoal portrait commissions for clients nationwide.
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+            <!-- END: SCREEN 2 ABOUT -->
+
+
+            <!-- ====================================================
+                 SCREEN 3: CONTACTS  (#screen-links)
+                 Two contact link buttons: Facebook and Email.
+                 TO UPDATE: Change the href values if your
+                 Facebook link or email address ever changes.
+                 ==================================================== -->
+            <div id="screen-links" class="screen">
+                <div class="links-container">
+
+                    <p class="links-message">
+                        Ready to order or have questions?
+                    </p>
+
+                    <!-- Facebook — update href if your page URL changes -->
+                    <a href="https://www.facebook.com/khimharsumampil" onclick="openFacebook(event)"
+                       class="link-btn messenger-btn">
+                        Let's talk on Facebook
+                    </a>
+
+                    <!-- Email — update href if your email changes -->
+                    <a href="mailto:sumampilkim@gmail.com" class="link-btn email-btn">
+                        Send Email
+                    </a>
+
+                    <p class="links-note">
+                        After checkout, please send your reference photos via Messenger.
+                    </p>
+
+                </div>
+            </div>
+            <!-- END: SCREEN 3 CONTACTS -->
+
+
+        </main>
+        <!-- END: MAIN CONTENT AREA -->
+
+
+        <!-- ============================================================
+             COMMISSION FULL-SCREEN POPUP  (#screen-commission)
+
+             Slides up from the bottom over the whole page.
+             Opened by any of the 3 commission buttons.
+             JS toggles the .active class to show/hide it.
+
+             Contains 3 views (only one visible at a time):
+             ┌──────────────────────────────────────────────────────┐
+             │  View A: #commission-step-1  — tap cards (options)  │
+             │  View B: #commission-step-2  — 3 input fields       │
+             │  View C: #receipt-view       — receipt + actions     │
+             └──────────────────────────────────────────────────────┘
+             Flow:  Step 1 → Step 2 → Receipt
+             Back:  Receipt → (Quit resets to Step 1)
+                    Step 2  → (← Edit goes back to Step 1)
+                    Header  → (← Back closes the popup entirely)
+             ============================================================ -->
+        <div id="screen-commission" class="commission-screen">
+            <div class="commission-content">
+
+
+                <!-- ── POPUP HEADER ──────────────────────────────────
+                     ← Back button closes the popup (goes to gallery).
+                     Step dots show progress: dot-1 = Step 1 active,
+                     dot-2 = Step 2 active. JS updates them in section 7.
+                     ─────────────────────────────────────────────── -->
+                <div class="popup-header">
+                    <button id="back-commission" class="back-btn">← Back</button>
+                    <div class="popup-step-indicator">
+                        <span class="step-dot active" id="dot-1"></span>
+                        <span class="step-dot" id="dot-2"></span>
+                    </div>
+                </div>
+
+
+                <!-- ================================================
+                     VIEW A: STEP 1 — BUILD YOUR PORTRAIT
+                     (#commission-step-1)
+
+                     4 groups of tap cards. Tapping a card saves the
+                     selection to wizardState{} and recalculates price.
+
+                     Pricing rules (enforced in JS calculatePrice()):
+                     • Size base: Small ₱300 | Medium ₱550 | Large ₱950
+                     • Couple discount: −12% per head
+                     • Group discount:  −22% per head
+                     • Background add-on: +₱50 / ₱70 / ₱100 by size
+                     • Rush surcharge: +30% on total
+                     ================================================ -->
+                <div id="commission-step-1">
+
+                    <div class="wizard-step-label">
+                        <span class="wizard-step-num">Step 1 of 2</span>
+                        <h2 class="wizard-title">Build Your Portrait</h2>
+                        <p class="wizard-sub">Tap to select your options below.</p>
+                    </div>
+
+                    <!-- Drawing Size cards -->
+                    <div class="option-group">
+                        <label class="option-group-label">Drawing Size</label>
+                        <div class="option-cards" id="size-cards">
+                            <div class="option-card" data-group="size" data-value="small">
+                                <span class="ocard-title">Small</span>
+                                <span class="ocard-sub">6×8 inches</span>
+                                <span class="ocard-price">₱300</span>
+                            </div>
+                            <div class="option-card" data-group="size" data-value="medium">
+                                <span class="ocard-title">Medium</span>
+                                <span class="ocard-sub">8×10 inches</span>
+                                <span class="ocard-price">₱550</span>
+                            </div>
+                            <div class="option-card" data-group="size" data-value="large">
+                                <span class="ocard-title">Large</span>
+                                <span class="ocard-sub">9×12 inches</span>
+                                <span class="ocard-price">₱950</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Number of People cards -->
+                    <div class="option-group">
+                        <label class="option-group-label">Number of People</label>
+                        <div class="option-cards" id="heads-cards">
+                            <div class="option-card" data-group="heads" data-value="1">
+                                <span class="ocard-title">Solo</span>
+                                <span class="ocard-sub">1 person</span>
+                            </div>
+                            <div class="option-card" data-group="heads" data-value="2">
+                                <span class="ocard-title">Couple</span>
+                                <span class="ocard-sub">2 people</span>
+                                <span class="ocard-badge">−12%</span>
+                            </div>
+                            <div class="option-card" data-group="heads" data-value="3">
+                                <span class="ocard-title">Group</span>
+                                <span class="ocard-sub">3+ people</span>
+                                <span class="ocard-badge">−22%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Background cards -->
+                    <div class="option-group">
+                        <label class="option-group-label">Background</label>
+                        <div class="option-cards" id="bg-cards">
+                            <div class="option-card" data-group="bg" data-value="none">
+                                <span class="ocard-title">None</span>
+                                <span class="ocard-sub">Clean & simple</span>
+                            </div>
+                            <div class="option-card" data-group="bg" data-value="simple">
+                                <span class="ocard-title">With BG</span>
+                                <span class="ocard-sub">+₱50–100</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Delivery / Rush cards -->
+                    <div class="option-group">
+                        <label class="option-group-label">Delivery</label>
+                        <div class="option-cards" id="rush-cards">
+                            <div class="option-card" data-group="rush" data-value="no">
+                                <span class="ocard-title">Normal</span>
+                                <span class="ocard-sub">Standard time</span>
+                            </div>
+                            <div class="option-card" data-group="rush" data-value="yes">
+                                <span class="ocard-title">Rush</span>
+                                <span class="ocard-sub">Priority queue</span>
+                                <span class="ocard-badge">+30%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live price — updates instantly on each card tap.
+                         #price-breakdown shows the formula breakdown.  -->
+                    <div class="price-box">
+                        <div class="estimated-price">
+                            <span>Estimated Total</span>
+                            <span id="total-price">₱—</span>
+                        </div>
+                        <p class="price-note" id="price-breakdown"></p>
+                    </div>
+
+                    <!-- Advances to Step 2. Validates size + people first. -->
+                    <button type="button" id="step1-next-btn" class="submit-btn">
+                        Continue → Enter Details
+                    </button>
+
+                    <p class="wizard-reminder">
+                        💡 50% downpayment required to start your drawing.
+                    </p>
+
+                </div>
+                <!-- END: VIEW A STEP 1 -->
+
+
+                <!-- ================================================
+                     VIEW B: STEP 2 — YOUR DETAILS
+                     (#commission-step-2)
+
+                     Hidden on load. Shown when Step 1 is complete.
+                     Shows a recap of Step 1 selections at the top.
+                     Client fills in 3 required fields + optional note.
+                     JS: STEP NAVIGATION section 7 in script.js.
+                     ================================================ -->
+                <div id="commission-step-2" style="display:none;">
+
+                    <div class="wizard-step-label">
+                        <!-- Bug fix: was "Step 2 of 3" — corrected to "Step 2 of 2" -->
+                        <span class="wizard-step-num">Step 2 of 2</span>
+                        <h2 class="wizard-title">Your Details</h2>
+                        <p class="wizard-sub">Just 3 fields and you're done.</p>
+                    </div>
+
+                    <!-- Recap summary — auto-filled by JS with Step 1 choices -->
+                    <div class="order-recap" id="order-recap"></div>
+
+                    <!-- Required fields -->
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="client-name"
+                               placeholder="ex. Juan Dela Cruz" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Number</label>
+                        <input type="tel" id="client-contact"
+                               placeholder="ex. 09 xxx xxx xxx" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Delivery Address</label>
+                        <textarea id="client-address" rows="2"
+                                  placeholder="Street, Barangay, City, Province" required>
+                        </textarea>
+                    </div>
+
+                    <!-- Optional field — lighter styled label -->
+                    <div class="form-group">
+                        <label style="color: var(--text-muted); font-weight:400;">
+                            Special Requests
+                            <span style="font-size:0.78rem;">(optional)</span>
+                        </label>
+                        <textarea id="description" rows="2"
+                                  placeholder="Pose, clothing, combine photos, etc.">
+                        </textarea>
+                    </div>
+
+                    <!-- Price reminder shown again at Step 2 -->
+                    <div class="price-box">
+                        <div class="estimated-price">
+                            <span>Your Total</span>
+                            <span id="total-price-2">₱—</span>
+                        </div>
+                    </div>
+
+                    <!-- ← Edit returns to Step 1 | Confirm Order creates receipt -->
+                    <div class="step2-actions">
+                        <button type="button" id="step2-back-btn" class="back-step-btn">
+                            ← Edit
+                        </button>
+                        <button type="button" id="checkout-btn" class="submit-btn flex1">
+                            Confirm Order ✓
+                        </button>
+                    </div>
+
+                </div>
+                <!-- END: VIEW B STEP 2 -->
+
+
+                <!-- ================================================
+                     VIEW C: RECEIPT
+                     (#receipt-view)
+
+                     Hidden on load. Shown after Confirm Order.
+                     All fields inside #receipt-content are auto-filled
+                     by JS checkout handler in script.js section 8.
+
+                     IMPORTANT: #receipt-content is what html2canvas
+                     screenshots for the Download button. Do NOT place
+                     buttons or interactive elements inside it.
+                     ================================================ -->
+                <div id="receipt-view" style="display: none;">
+
+                    <!-- Success message with next-step instructions -->
+                    <div class="receipt-success-header">
+                        <div class="receipt-check">✓</div>
+                        <h2 class="receipt-success-title">Order Placed!</h2>
+                        <p class="receipt-success-sub">
+                            <strong>Final step to confirm your order:</strong><br>
+                            Scroll down → Copy order details → Send via Messenger.<br>
+                            After tapping "Send via Messenger", message me on Facebook
+                            and paste your order details. 😊
+                        </p>
+                    </div>
+
+                    <!-- Receipt card — gets downloaded as PNG image -->
+                    <div class="receipt" id="receipt-content">
+
+                        <div class="receipt-brand">
+                            <p class="receipt-shop-name">IK Piso Drawing</p>
+                            <p class="receipt-subtitle">Official Commission Receipt</p>
+                        </div>
+
+                        <div class="receipt-line"></div>
+
+                        <!-- Auto-filled: date and unique Order ID -->
+                        <div class="receipt-row">
+                            <span>Date</span>
+                            <span id="receipt-date"></span>
+                        </div>
+                        <div class="receipt-row">
+                            <span>Order ID</span>
+                            <span id="receipt-id"></span>
+                        </div>
+
+                        <div class="receipt-line"></div>
+
+                        <!-- Auto-filled: client info from Step 2 -->
+                        <div class="receipt-row">
+                            <span>Name</span>
+                            <span id="r-name"></span>
+                        </div>
+                        <div class="receipt-row">
+                            <span>Contact</span>
+                            <span id="r-contact"></span>
+                        </div>
+                        <div class="receipt-row">
+                            <span>Address</span>
+                            <span id="r-address"></span>
+                        </div>
+
+                        <div class="receipt-line"></div>
+
+                        <!-- Auto-filled: commission options from Step 1 -->
+                        <div class="receipt-row">
+                            <span>Size</span>
+                            <span id="r-size"></span>
+                        </div>
+                        <div class="receipt-row">
+                            <span>People</span>
+                            <span id="r-heads"></span>
+                        </div>
+                        <div class="receipt-row">
+                            <span>Background</span>
+                            <span id="r-bg"></span>
+                        </div>
+                        <div class="receipt-row">
+                            <span>Delivery</span>
+                            <span id="r-rush"></span>
+                        </div>
+
+                        <div class="receipt-line"></div>
+
+                        <!-- Auto-filled: total and calculated 50% downpayment -->
+                        <div class="receipt-row total">
+                            <span>TOTAL</span>
+                            <span id="r-price"></span>
+                        </div>
+                        <div class="receipt-row downpayment-row">
+                            <span>Min. Downpayment (50%)</span>
+                            <span id="r-downpayment"></span>
+                        </div>
+
+                        <div class="receipt-line"></div>
+
+                        <p class="receipt-note">
+                            Salamat po sa tiwala! Sa susunod ulit 🥰
+                        </p>
+
+                    </div>
+                    <!-- END: RECEIPT CARD -->
+
+                    <!-- Receipt action buttons (outside the receipt card,
+                         so they do NOT appear in the downloaded image)  -->
+                    <div class="receipt-actions">
+
+                        <!-- Captures #receipt-content as a PNG download -->
+                        <button type="button" id="download-receipt" class="action-btn">
+                            ↓ Download Receipt
+                        </button>
+
+                        <!-- Copies a full text summary to clipboard -->
+                        <button id="copy-order-btn" class="action-btn secondary">
+                            Copy Order Details
+                        </button>
+
+                        <!-- Opens Facebook — update href if your link changes -->
+                        <!-- Replace the current Send via Messenger button with this: -->
+<a href="https://www.facebook.com/khimharsumampil" onclick="openFacebook(event)"
+                       class="link-btn messenger-btn">
+                        Let's talk on Facebook
+                    </a>
+
+                        <!-- Resets everything and goes back to Step 1 -->
+                        <button type="button" id="back-to-form" class="action-btn secondary">
+                            Quit
+                        </button>
+
+                    </div>
+
+                </div>
+                <!-- END: VIEW C RECEIPT -->
+
+
+            </div>
+        </div>
+        <!-- END: COMMISSION FULL-SCREEN POPUP -->
+
+
+    </div>
+    <!-- END: MAIN CONTAINER -->
+
+
+    <!-- ============================================================
+         BOTTOM NAVIGATION BAR
+         Fixed at the bottom of the screen at all times.
+         Hidden automatically when the commission popup opens
+         (JS adds the .hidden class), restored when it closes.
+         Each link uses data-screen to tell JS which screen to show.
+         Icons require Font Awesome (linked in <head>).
+         ============================================================ -->
+    <nav class="bottom-nav">
+        <a href="#" id="btn-gallery" class="nav-btn active" data-screen="gallery">
+            <i class="fas fa-palette"></i>
+            <span>Gallery</span>
+        </a>
+        <a href="#" id="btn-resume" class="nav-btn" data-screen="resume">
+            <i class="fas fa-user"></i>
+            <span>About me</span>
+        </a>
+        <a href="#" id="btn-links" class="nav-btn" data-screen="links">
+            <i class="fas fa-link"></i>
+            <span>Contacts</span>
+        </a>
+    </nav>
+    <!-- END: BOTTOM NAVIGATION BAR -->
+
+
+    <!-- script.js loaded here at the bottom of <body> so that all
+         HTML elements exist before JS tries to find them.          -->
+    <script src="script.js"></script>
+
+</body>
+</html>
